@@ -41,17 +41,17 @@ public interface OmsPortalOrderService {
      * 取消单个超时订单
      */
     @Transactional
-    void cancelOrder(Long orderId);
+    void cancelOrder(String orderSn);
 
     /**
      * 发送延迟消息取消订单
      */
-    void sendDelayMessageCancelOrder(Long orderId);
+    void sendDelayMessageCancelOrder(String orderSn);
 
     /**
      * 确认收货
      */
-    void confirmReceiveOrder(Long orderId);
+    void confirmReceiveOrder(String orderSn);
 
     /**
      * 分页获取用户订单
@@ -61,16 +61,16 @@ public interface OmsPortalOrderService {
     /**
      * 根据订单ID获取订单详情
      */
-    OmsOrderDetail detail(Long orderId);
+    OmsOrderDetail detail(String orderSn);
 
     /**
      * 用户根据订单ID删除订单
      */
-    void deleteOrder(Long orderId);
+    void deleteOrder(String orderSn);
 
     /**
      * 根据orderSn来实现的支付成功逻辑
      */
     @Transactional
-    void paySuccessByOrderSn(String orderSn, Integer payType);
+    Integer paySuccessByOrderSn(String orderSn, Integer payType);
 }

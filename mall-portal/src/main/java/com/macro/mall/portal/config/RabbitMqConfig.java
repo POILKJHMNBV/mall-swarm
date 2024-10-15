@@ -1,9 +1,16 @@
 package com.macro.mall.portal.config;
 
 import com.macro.mall.portal.domain.QueueEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * 消息队列相关配置
@@ -12,12 +19,29 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfig {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqConfig.class);
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @PostConstruct
+    public void processAmqpTemplate() {
+        rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+            String orderId = correlationData.getId();
+            if (!ack) {
+                LOGGER.error("订单" + orderId + "投递失败， 失败原因为：" + cause);
+            }
+        });
+
+        rabbitTemplate.setReturnsCallback(returnedMessage -> LOGGER.error("消息投递失败，returnedMessage: " + returnedMessage));
+    }
+
     /**
      * 订单消息实际消费队列所绑定的交换机
      */
     @Bean
     DirectExchange orderDirect() {
-        return (DirectExchange) ExchangeBuilder
+        return ExchangeBuilder
                 .directExchange(QueueEnum.QUEUE_ORDER_CANCEL.getExchange())
                 .durable(true)
                 .build();
@@ -28,7 +52,7 @@ public class RabbitMqConfig {
      */
     @Bean
     DirectExchange orderTtlDirect() {
-        return (DirectExchange) ExchangeBuilder
+        return ExchangeBuilder
                 .directExchange(QueueEnum.QUEUE_TTL_ORDER_CANCEL.getExchange())
                 .durable(true)
                 .build();

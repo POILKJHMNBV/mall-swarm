@@ -28,30 +28,48 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
 
     @Override
     public List<CartPromotionItem> calcCartPromotion(List<OmsCartItem> cartItemList) {
-        //1.先根据productId对CartItem进行分组，以spu为单位进行计算优惠
+        //1.每个产品的优惠不一样，先根据productId对CartItem进行分组，以spu为单位进行计算优惠
         Map<Long, List<OmsCartItem>> productCartMap = groupCartItemBySpu(cartItemList);
+
         //2.查询所有商品的优惠相关信息
         List<PromotionProduct> promotionProductList = getPromotionProductList(cartItemList);
+
         //3.根据商品促销类型计算商品促销优惠价格
         List<CartPromotionItem> cartPromotionItemList = new ArrayList<>();
         for (Map.Entry<Long, List<OmsCartItem>> entry : productCartMap.entrySet()) {
             Long productId = entry.getKey();
-            PromotionProduct promotionProduct = getPromotionProductById(productId, promotionProductList);
             List<OmsCartItem> itemList = entry.getValue();
+
+            // 获取商品的促销优惠信息
+            PromotionProduct promotionProduct = getPromotionProductById(productId, promotionProductList);
+
+            // 获取商品的促销类型
             Integer promotionType = promotionProduct.getPromotionType();
+
+            // 根据商品促销类型计算商品促销优惠价格
+            /*
+                0->没有促销使用原价
+                1->使用促销价
+                2->使用会员价
+                3->使用阶梯价格
+                4->使用满减价格
+                5->限时购
+             */
             if (promotionType == 1) {
-                //单品促销
+                // 单品促销
                 for (OmsCartItem item : itemList) {
                     CartPromotionItem cartPromotionItem = new CartPromotionItem();
                     BeanUtils.copyProperties(item,cartPromotionItem);
                     cartPromotionItem.setPromotionMessage("单品促销");
+
                     //商品原价-促销价
                     PmsSkuStock skuStock = getOriginalPrice(promotionProduct, item.getProductSkuId());
                     BigDecimal originalPrice = skuStock.getPrice();
+
                     //单品促销使用原价
                     cartPromotionItem.setPrice(originalPrice);
                     cartPromotionItem.setReduceAmount(originalPrice.subtract(skuStock.getPromotionPrice()));
-                    cartPromotionItem.setRealStock(skuStock.getStock()-skuStock.getLockStock());
+                    cartPromotionItem.setRealStock(skuStock.getStock() - skuStock.getLockStock());
                     cartPromotionItem.setIntegration(promotionProduct.getGiftPoint());
                     cartPromotionItem.setGrowth(promotionProduct.getGiftGrowth());
                     cartPromotionItemList.add(cartPromotionItem);
@@ -112,6 +130,8 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
 
     /**
      * 查询所有商品的优惠相关信息
+     * @param cartItemList 购物车商品列表
+     * @return 商品促销信息列表
      */
     private List<PromotionProduct> getPromotionProductList(List<OmsCartItem> cartItemList) {
         List<Long> productIdList = new ArrayList<>();
@@ -122,7 +142,9 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
     }
 
     /**
-     * 以spu为单位对购物车中商品进行分组
+     * 以productId为单位对购物车中商品进行分组
+     * @param cartItemList 购物车商品列表
+     * @return 以productId为 key ，购物车商品列表为 value 的m ap
      */
     private Map<Long, List<OmsCartItem>> groupCartItemBySpu(List<OmsCartItem> cartItemList) {
         Map<Long, List<OmsCartItem>> productCartMap = new TreeMap<>();

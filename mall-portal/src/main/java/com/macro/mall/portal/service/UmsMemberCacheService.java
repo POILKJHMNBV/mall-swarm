@@ -28,6 +28,12 @@ public interface UmsMemberCacheService {
     void setAuthCode(String telephone, String authCode);
 
     /**
+     * 删除验证码
+     * @param telephone 电话
+     */
+    void delAuthCode(String telephone);
+
+    /**
      * 获取验证码
      */
     String getAuthCode(String telephone);
