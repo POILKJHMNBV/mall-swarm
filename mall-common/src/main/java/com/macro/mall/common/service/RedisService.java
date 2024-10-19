@@ -1,5 +1,7 @@
 package com.macro.mall.common.service;
 
+import org.springframework.data.redis.core.script.RedisScript;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -179,4 +181,9 @@ public interface RedisService {
      * 从List结构中移除属性
      */
     Long lRemove(String key, long count, Object value);
+
+    /**
+     * 执行lua脚本
+     */
+    <T> T execute(RedisScript<T> script, List<String> keys, Object... args);
 }

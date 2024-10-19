@@ -65,7 +65,7 @@ public class UmsMemberController {
     }
 
     @Operation(summary = "登出功能")
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
     @ResponseBody
     public CommonResult<?> logout() {
         memberService.logout();

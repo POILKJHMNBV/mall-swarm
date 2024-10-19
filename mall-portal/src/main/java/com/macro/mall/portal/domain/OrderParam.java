@@ -25,4 +25,6 @@ public class OrderParam {
     private List<Long> cartIds;
     @Schema(title = "订单备注")
     private String note;
+    @Schema(title = "订单令牌")
+    private String orderToken;
 }

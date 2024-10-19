@@ -2,21 +2,27 @@ package com.macro.mall.portal.controller;
 
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.constant.AuthConstant;
+import com.macro.mall.common.dto.UserDto;
+import com.macro.mall.common.service.IdempotenceService;
 import com.macro.mall.portal.domain.ConfirmOrderResult;
 import com.macro.mall.portal.domain.OmsOrderDetail;
 import com.macro.mall.portal.domain.OrderParam;
 import com.macro.mall.portal.service.OmsPortalOrderService;
+import com.macro.mall.portal.util.StpMemberUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 订单管理Controller
@@ -29,6 +35,12 @@ public class OmsPortalOrderController {
     @Autowired
     private OmsPortalOrderService portalOrderService;
 
+    @Autowired
+    private IdempotenceService idempotenceService;
+
+    @Value("${redis.expire.idempotence-token}")
+    private Long IDEMPOTENCE_TOKEN_EXPIRE_TIME;
+
     @Operation(summary = "根据购物车信息生成确认单信息")
     @RequestMapping(value = "/generateConfirmOrder", method = RequestMethod.POST)
     @ResponseBody
@@ -37,10 +49,25 @@ public class OmsPortalOrderController {
         return CommonResult.success(confirmOrderResult);
     }
 
+    @Operation(summary = "生成幂等性token")
+    @RequestMapping(value = "/requestToken", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<String> requestToken() {
+        UserDto userDto = (UserDto) StpMemberUtil.getSession().get(AuthConstant.STP_MEMBER_INFO);
+        return CommonResult.success(idempotenceService.requestToken(
+                IdempotenceService.KEY_PREFIX + "oms:" + userDto.getUsername(),
+                IDEMPOTENCE_TOKEN_EXPIRE_TIME, TimeUnit.MINUTES));
+    }
+
     @Operation(summary = "根据购物车信息生成订单")
     @RequestMapping(value = "/generateOrder", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult<Map<String, Object>> generateOrder(@RequestBody OrderParam orderParam) {
+        UserDto userDto = (UserDto) StpMemberUtil.getSession().get(AuthConstant.STP_MEMBER_INFO);
+        if (!idempotenceService.validToken(IdempotenceService.KEY_PREFIX + "oms:" + userDto.getUsername(),
+                orderParam.getOrderToken())) {
+            return CommonResult.failed("订单已经生成，请勿重复提交");
+        }
         Map<String, Object> result = portalOrderService.generateOrder(orderParam);
         return CommonResult.success(result, "下单成功");
     }
