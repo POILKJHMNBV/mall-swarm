@@ -1,10 +1,15 @@
 package com.macro.mall.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class PmsProductLadder implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 926964670304184220L;
+
     private Long id;
 
     private Long productId;
@@ -17,8 +22,6 @@ public class PmsProductLadder implements Serializable {
 
     @Schema(title = "折后价格")
     private BigDecimal price;
-
-    private static final long serialVersionUID = 1L;
 
     public Long getId() {
         return id;

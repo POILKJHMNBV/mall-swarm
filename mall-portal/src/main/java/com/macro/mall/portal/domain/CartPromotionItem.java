@@ -2,6 +2,7 @@ package com.macro.mall.portal.domain;
 
 import com.macro.mall.model.OmsCartItem;
 
+import java.io.Serial;
 import java.math.BigDecimal;
 
 /**
@@ -9,6 +10,8 @@ import java.math.BigDecimal;
  * 购物车中促销信息的封装
  */
 public class CartPromotionItem extends OmsCartItem{
+    @Serial
+    private static final long serialVersionUID = -6842161266996774691L;
     //促销活动信息
     private String promotionMessage;
     //促销活动减去的金额，针对每个商品

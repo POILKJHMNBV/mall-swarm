@@ -13,7 +13,6 @@ import com.macro.mall.portal.service.OmsPromotionService;
 import com.macro.mall.portal.service.UmsMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,7 +64,7 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
             criteria.andProductSkuIdEqualTo(cartItem.getProductSkuId());
         }
         List<OmsCartItem> cartItemList = cartItemMapper.selectByExample(example);
-        if (!CollectionUtils.isEmpty(cartItemList)) {
+        if (CollUtil.isNotEmpty(cartItemList)) {
             return cartItemList.get(0);
         }
         return null;
@@ -81,11 +80,13 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
     @Override
     public List<CartPromotionItem> listPromotion(Long memberId, List<Long> cartIds) {
         List<OmsCartItem> cartItemList = list(memberId);
-        if(CollUtil.isNotEmpty(cartIds)){
+        if(CollUtil.isNotEmpty(cartIds)) {
+            // 过滤出购物车中用户指定的商品
             cartItemList = cartItemList.stream().filter(item->cartIds.contains(item.getId())).collect(Collectors.toList());
         }
         List<CartPromotionItem> cartPromotionItemList = new ArrayList<>();
-        if(!CollectionUtils.isEmpty(cartItemList)){
+        if(CollUtil.isNotEmpty(cartItemList)) {
+            // 计算购物车中促销信息
             cartPromotionItemList = promotionService.calcCartPromotion(cartItemList);
         }
         return cartPromotionItemList;

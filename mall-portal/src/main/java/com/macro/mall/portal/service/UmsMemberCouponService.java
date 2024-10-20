@@ -25,7 +25,9 @@ public interface UmsMemberCouponService {
     List<SmsCouponHistory> listHistory(Integer useStatus);
 
     /**
-     * 根据购物车信息获取可用优惠券
+     * 根据购物车信息获取用户未使用优惠券
+     * @param cartItemList 购物车信息
+     * @param type 优惠可用状态 1->可用  其它->不可用
      */
     List<SmsCouponHistoryDetail> listCart(List<CartPromotionItem> cartItemList, Integer type);
 

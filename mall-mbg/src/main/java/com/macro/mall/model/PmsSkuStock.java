@@ -1,10 +1,15 @@
 package com.macro.mall.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class PmsSkuStock implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 2273232550948266039L;
+
     private Long id;
 
     private Long productId;
@@ -34,8 +39,6 @@ public class PmsSkuStock implements Serializable {
 
     @Schema(title = "商品销售属性，json格式")
     private String spData;
-
-    private static final long serialVersionUID = 1L;
 
     public Long getId() {
         return id;

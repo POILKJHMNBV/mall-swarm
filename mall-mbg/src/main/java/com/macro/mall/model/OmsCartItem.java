@@ -1,11 +1,16 @@
 package com.macro.mall.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 public class OmsCartItem implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 3304726892197135224L;
+
     private Long id;
 
     private Long productId;
@@ -53,8 +58,6 @@ public class OmsCartItem implements Serializable {
 
     @Schema(title = "商品销售属性:[{'key':'颜色','value':'颜色'},{'key':'容量','value':'4G'}]")
     private String productAttr;
-
-    private static final long serialVersionUID = 1L;
 
     public Long getId() {
         return id;
