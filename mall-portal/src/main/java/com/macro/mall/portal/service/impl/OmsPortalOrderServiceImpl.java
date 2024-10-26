@@ -571,12 +571,11 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
      */
     private BigDecimal calcPayAmount(OmsOrder order) {
         //总金额+运费-促销优惠-优惠券优惠-积分抵扣
-        BigDecimal payAmount = order.getTotalAmount()
+        return order.getTotalAmount()
                 .add(order.getFreightAmount())
                 .subtract(order.getPromotionAmount())
                 .subtract(order.getCouponAmount())
                 .subtract(order.getIntegrationAmount());
-        return payAmount;
     }
 
     /**
@@ -756,10 +755,16 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
      * 锁定下单商品的所有库存
      */
     private void lockStock(List<CartPromotionItem> cartPromotionItemList) {
+        Map<String, Number> paramMap = new HashMap<>();
         for (CartPromotionItem cartPromotionItem : cartPromotionItemList) {
             PmsSkuStock skuStock = skuStockMapper.selectByPrimaryKey(cartPromotionItem.getProductSkuId());
-            skuStock.setLockStock(skuStock.getLockStock() + cartPromotionItem.getQuantity());
-            skuStockMapper.updateByPrimaryKeySelective(skuStock);
+            paramMap.put("id", skuStock.getId());
+            paramMap.put("lockQuantity", cartPromotionItem.getQuantity());
+            // 利用乐观锁方式锁定库存，防止超卖
+            if (portalOrderDao.lockStock(paramMap) == 0) {
+                Asserts.fail("库存不足");
+            }
+            paramMap.clear();
         }
     }
 

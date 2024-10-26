@@ -5,6 +5,7 @@ import com.macro.mall.portal.domain.OmsOrderDetail;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 前台订单自定义Dao
@@ -37,4 +38,10 @@ public interface PortalOrderDao {
      */
     int releaseSkuStockLock(@Param("itemList") List<OmsOrderItem> orderItemList);
 
+    /**
+     * 锁定库存
+     * @param paramMap pms_sku_stock的id 和 锁定数量
+     * @return 锁定结果 1成功 0失败
+     */
+    int lockStock(Map<String, Number> paramMap);
 }

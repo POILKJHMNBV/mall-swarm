@@ -88,4 +88,9 @@
             #{item.productSkuId}
         </foreach>
     </update>
+    <update id="lockStock" parameterType="java.util.Map">
+        UPDATE pms_sku_stock
+        SET lock_stock = lock_stock + #{lockQuantity}
+        WHERE id = #{id} AND lock_stock + #{lockQuantity} &lt;= stock
+    </update>
 </mapper>
